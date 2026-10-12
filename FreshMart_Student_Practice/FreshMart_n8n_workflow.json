@@ -1,0 +1,122 @@
+{
+  "name": "FreshMart Alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "freshmart",
+        "options": {}
+      },
+      "id": "6f1c2a10-1111-4a1a-9a01-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "6f1c2a10-1111-4a1a-9a01-0000000000aa"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "6f1c2a10-1111-4a1a-9a01-0000000000bb",
+              "leftValue": "={{ $json.body.status }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6f1c2a10-1111-4a1a-9a01-000000000002",
+      "name": "Did it work?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "PUT-YOUR-EMAIL-HERE@gmail.com",
+        "subject": "=FreshMart dashboard updated - {{ $json.body.total_revenue_text }}",
+        "emailType": "text",
+        "message": "=Hello,\n\nThe FreshMart dashboard was updated at {{ $json.body.time }}.\n\nBranches: {{ $json.body.branches }} ({{ $json.body.branch_list }})\nTotal revenue: {{ $json.body.total_revenue_text }}\nTop branch: {{ $json.body.top_branch }}\nClean rows: {{ $json.body.clean_rows }}\nRows to check: {{ $json.body.rows_to_check }}\n\nOpen the dashboard: {{ $json.body.sheet_url }}\n\n- FreshMart robot",
+        "options": {}
+      },
+      "id": "6f1c2a10-1111-4a1a-9a01-000000000003",
+      "name": "Email: success",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        500,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "PUT-YOUR-EMAIL-HERE@gmail.com",
+        "subject": "FreshMart script FAILED",
+        "emailType": "text",
+        "message": "=The FreshMart update failed at {{ $json.body.time }}.\n\nError: {{ $json.body.error }}\n\nOpen output/automation_log.txt on the laptop to see what happened.\n\n- FreshMart robot",
+        "options": {}
+      },
+      "id": "6f1c2a10-1111-4a1a-9a01-000000000005",
+      "name": "Email: failed",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        500,
+        220
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Did it work?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Did it work?": {
+      "main": [
+        [
+          {
+            "node": "Email: success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email: failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
